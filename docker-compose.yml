@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tshirt-stock-postgres
+    environment:
+      POSTGRES_DB: tshirt_stock
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tshirt_stock"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tshirt-stock-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tshirt_stock
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      APP_JWT_SECRET: Y2hhbmdlLXRoaXMtc2VjcmV0LWtleS1jaGFuZ2UtdGhpcy1zZWNyZXQta2V5
+      APP_ADMIN_EMAIL: admin@tshirt.local
+      APP_ADMIN_PASSWORD: Admin@123
+      APP_STAFF_EMAIL: staff@tshirt.local
+      APP_STAFF_PASSWORD: Staff@123
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tshirt-stock-frontend
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+
+volumes:
+  postgres_data:

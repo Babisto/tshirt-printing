@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threadline Stock Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css?v=20260328b">
+</head>
+<body>
+<div class="ambient ambient-one"></div>
+<div class="ambient ambient-two"></div>
+
+<div id="authGate" class="auth-gate">
+    <section class="auth-stage">
+        <div class="auth-copy">
+            <p class="eyebrow">Threadline Access</p>
+            <h1>Sign in before entering your stock workspace.</h1>
+            <p class="hero-copy">Every account gets its own inventory, paint usage, print jobs, and reports. Sign in to continue with your workspace or register to create a new one.</p>
+            <div class="auth-note-list">
+                <div class="feed-item">
+                    <strong>Private workspaces</strong>
+                    <p>Products, paints, print jobs, and reports are scoped to the signed-in user.</p>
+                </div>
+            </div>
+        </div>
+        <div class="auth-panel">
+            <div class="auth-tabs">
+                <button id="showLoginBtn" class="auth-tab active" type="button">Login</button>
+                <button id="showRegisterBtn" class="auth-tab" type="button">Register</button>
+            </div>
+
+            <form id="loginForm" class="stacked-form auth-form">
+                <div class="section-head compact">
+                    <div>
+                        <p class="eyebrow">Welcome back</p>
+                        <h2>Log into your workspace</h2>
+                    </div>
+                </div>
+                <label>
+                    <span>Email</span>
+                    <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="username" required>
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+                </label>
+                <label>
+                    <span>API Base URL</span>
+                    <input id="loginApiBaseUrl" type="text" value="http://localhost:8080" required>
+                </label>
+                <button class="primary-btn" type="submit">Enter dashboard</button>
+            </form>
+
+            <form id="registerForm" class="stacked-form auth-form hidden">
+                <div class="section-head compact">
+                    <div>
+                        <p class="eyebrow">New workspace</p>
+                        <h2>Create an account</h2>
+                    </div>
+                </div>
+                <label>
+                    <span>Full name</span>
+                    <input id="registerFullName" type="text" placeholder="Jane Doe" autocomplete="name" required>
+                </label>
+                <label>
+                    <span>Email</span>
+                    <input id="registerEmail" type="email" placeholder="jane@example.com" autocomplete="username" required>
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input id="registerPassword" type="password" placeholder="At least 8 characters" autocomplete="new-password" required minlength="8">
+                </label>
+                <label>
+                    <span>API Base URL</span>
+                    <input id="registerApiBaseUrl" type="text" value="http://localhost:8080" required>
+                </label>
+                <button class="primary-btn" type="submit">Create account</button>
+                <p class="helper-text">Registration signs you in immediately and starts you with your own empty workspace.</p>
+            </form>
+        </div>
+    </section>
+</div>
+
+<div id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">TS</div>
+            <div>
+                <p class="eyebrow">T-shirt operations</p>
+                <h1>Threadline</h1>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <button class="nav-link active" data-target="overview">Overview</button>
+            <button class="nav-link" data-target="products">Products</button>
+            <button class="nav-link" data-target="paint">Paints</button>
+            <button class="nav-link" data-target="jobs">Print Jobs</button>
+            <button class="nav-link" data-target="reports">Reports</button>
+            <button class="nav-link" data-target="settings">Settings</button>
+        </nav>
+
+        <section class="auth-card session-card">
+            <div class="section-head compact">
+                <div>
+                    <p class="eyebrow">Signed-in workspace</p>
+                    <h2>Workspace access</h2>
+                </div>
+                <span id="authState" class="status-pill">Signed out</span>
+            </div>
+            <div class="feed-list compact-feed">
+                <div class="feed-item">
+                    <strong>Workspace visibility</strong>
+                    <p>Only the signed-in user's records are loaded in this session.</p>
+                </div>
+            </div>
+            <button id="logoutBtn" class="ghost-btn" type="button">Logout</button>
+        </section>
+    </aside>
+
+    <main class="content">
+        <section class="hero">
+            <div>
+                <p class="eyebrow">Production cockpit</p>
+                <h2>Keep stock, paint, and print jobs in one focused workspace.</h2>
+                <p class="hero-copy">A brighter frontend for the inventory platform, designed to make low stock, revenue signals, and print activity easy to scan at a glance.</p>
+            </div>
+        </section>
+
+        <section id="overview" class="panel-section active">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Overview</p>
+                    <h2>Business snapshot</h2>
+                </div>
+                <button id="refreshAllBtn" class="ghost-btn">Refresh data</button>
+            </div>
+            <div class="metrics-grid" id="metricsGrid">
+                <article class="metric-card accent-sand">
+                    <span>Retail potential</span>
+                    <strong id="totalStockValue">KES 0.00</strong>
+                    <small>If all current stock sells at retail price</small>
+                </article>
+                <article class="metric-card accent-amber">
+                    <span>Stock cost basis</span>
+                    <strong id="totalStockCost">KES 0.00</strong>
+                    <small>Total acquisition cost across all variants</small>
+                </article>
+                <article class="metric-card accent-ink">
+                    <span>Inventory profit potential</span>
+                    <strong id="estimatedProfitPotential">KES 0.00</strong>
+                    <small>Retail potential minus stock cost basis</small>
+                </article>
+                <article class="metric-card accent-rose">
+                    <span>Completed job revenue</span>
+                    <strong id="completedJobsRevenue">KES 0.00</strong>
+                    <small>Total revenue from completed print jobs</small>
+                </article>
+                <article class="metric-card accent-mint">
+                    <span>Completed job profit</span>
+                    <strong id="completedJobsProfit">KES 0.00</strong>
+                    <small>Realized profit from completed print jobs</small>
+                </article>
+                <article class="metric-card accent-clay">
+                    <span>Avg daily profit</span>
+                    <strong id="averageDailyProfit30Days">KES 0.00</strong>
+                    <small>30-day daily average from completed jobs</small>
+                </article>
+                <article class="metric-card accent-ink-soft">
+                    <span>Projected weekly profit</span>
+                    <strong id="projectedWeeklyProfit">KES 0.00</strong>
+                    <small>Seven days at the current 30-day pace</small>
+                </article>
+                <article class="metric-card accent-rose-soft">
+                    <span>Low stock alerts</span>
+                    <strong id="lowStockCount">0</strong>
+                    <small>Variants below threshold</small>
+                </article>
+            </div>
+            <div class="split-layout">
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Category mix</p>
+                            <h3>Inventory distribution</h3>
+                        </div>
+                    </div>
+                    <div id="categoryCounts" class="list-grid"></div>
+                </section>
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Attention needed</p>
+                            <h3>Low stock alerts</h3>
+                        </div>
+                    </div>
+                    <div id="lowStockAlerts" class="feed-list"></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="products" class="panel-section">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Products</p>
+                    <h2>Variants and pricing</h2>
+                </div>
+            </div>
+            <div class="split-layout">
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Create product</p>
+                            <h3>New catalog item</h3>
+                        </div>
+                    </div>
+                    <form id="productForm" class="stacked-form">
+                        <div class="form-grid two-up">
+                            <label>
+                                <span>SKU</span>
+                                <input id="productSku" type="text" placeholder="PLAIN-WHT-001" required>
+                            </label>
+                            <label>
+                                <span>Name</span>
+                                <input id="productName" type="text" placeholder="Plain T-Shirt" required>
+                            </label>
+                        </div>
+                        <div class="form-grid two-up">
+                            <label>
+                                <span>Category</span>
+                                <select id="productCategory" required>
+                                    <option value="PLAIN_T_SHIRTS">Plain T-Shirts</option>
+                                    <option value="COLLAR_T_SHIRTS">Collar T-Shirts</option>
+                                    <option value="PRINTED_T_SHIRTS">Printed T-Shirts</option>
+                                    <option value="JERSEYS">Jerseys</option>
+                                    <option value="REFLECTORS">Reflectors</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Description</span>
+                                <input id="productDescription" type="text" placeholder="Soft cotton edition">
+                            </label>
+                        </div>
+                        <div class="section-head compact mini-head">
+                            <div>
+                                <p class="eyebrow">Starter variant</p>
+                                <h3>Variant seed</h3>
+                            </div>
+                        </div>
+                        <div class="form-grid three-up">
+                            <label>
+                                <span>Size</span>
+                                <select id="variantSize" required>
+                                    <option value="S">S</option>
+                                    <option value="M" selected>M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                    <option value="XXL">XXL</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Color</span>
+                                <input id="variantColor" type="text" placeholder="White" required>
+                            </label>
+                            <label>
+                                <span>Opening stock</span>
+                                <input id="variantQuantity" type="number" min="0" value="0" required>
+                            </label>
+                        </div>
+                        <div class="form-grid three-up">
+                            <label>
+                                <span>Unit cost</span>
+                                <input id="variantUnitCost" type="number" step="0.01" min="0" value="0" required>
+                            </label>
+                            <label>
+                                <span>Retail price</span>
+                                <input id="variantRetailPrice" type="number" step="0.01" min="0" value="0" required>
+                            </label>
+                            <label>
+                                <span>Low-stock threshold</span>
+                                <input id="variantThreshold" type="number" min="0" value="10" required>
+                            </label>
+                        </div>
+                        <label>
+                            <span>Barcode</span>
+                            <input id="variantBarcode" type="text" placeholder="Optional barcode / QR text">
+                        </label>
+                        <button class="primary-btn" type="submit">Create product</button>
+                    </form>
+                </section>
+
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Stock actions</p>
+                            <h3>Adjust inventory fast</h3>
+                        </div>
+                    </div>
+                    <form id="stockForm" class="stacked-form">
+                        <label>
+                            <span>Variant</span>
+                            <select id="stockVariantId" required></select>
+                        </label>
+                        <div class="form-grid three-up">
+                            <label>
+                                <span>Action</span>
+                                <select id="stockAction" required>
+                                    <option value="add">Add stock</option>
+                                    <option value="remove">Remove stock</option>
+                                    <option value="adjust">Adjust balance</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Quantity / Balance</span>
+                                <input id="stockQuantity" type="number" min="0" value="1" required>
+                            </label>
+                            <label>
+                                <span>Unit cost</span>
+                                <input id="stockUnitCost" type="number" step="0.01" min="0" placeholder="Optional">
+                            </label>
+                        </div>
+                        <div class="form-grid two-up">
+                            <label>
+                                <span>Reference</span>
+                                <input id="stockReference" type="text" placeholder="PO-1001" required>
+                            </label>
+                            <label>
+                                <span>Note</span>
+                                <input id="stockNote" type="text" placeholder="Supplier replenishment">
+                            </label>
+                        </div>
+                        <button class="primary-btn" type="submit">Submit stock action</button>
+                    </form>
+                    <div class="section-head compact mini-head">
+                        <div>
+                            <p class="eyebrow">Latest movement</p>
+                            <h3>Audit trail preview</h3>
+                        </div>
+                    </div>
+                    <div id="stockHistory" class="feed-list"></div>
+                </section>
+            </div>
+            <div id="productsGrid" class="cards-grid"></div>
+        </section>
+
+        <section id="paint" class="panel-section">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Paint inventory</p>
+                    <h2>Printing materials</h2>
+                </div>
+            </div>
+            <div class="split-layout">
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Add material</p>
+                            <h3>Paint record</h3>
+                        </div>
+                    </div>
+                    <form id="paintForm" class="stacked-form">
+                        <div class="form-grid two-up">
+                            <label>
+                                <span>Name</span>
+                                <input id="paintName" type="text" placeholder="Premium Red Ink" required>
+                            </label>
+                            <label>
+                                <span>Paint type</span>
+                                <input id="paintType" type="text" placeholder="PLASTISOL" required>
+                            </label>
+                        </div>
+                        <div class="form-grid three-up">
+                            <label>
+                                <span>Color</span>
+                                <input id="paintColor" type="text" placeholder="Red" required>
+                            </label>
+                            <label>
+                                <span>Quantity</span>
+                                <input id="paintQuantity" type="number" step="0.01" min="0" value="0" required>
+                            </label>
+                            <label>
+                                <span>Unit</span>
+                                <select id="paintUnit" required>
+                                    <option value="LITERS">Liters</option>
+                                    <option value="UNITS">Units</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="form-grid two-up">
+                            <label>
+                                <span>Cost per unit</span>
+                                <input id="paintCost" type="number" step="0.01" min="0" value="0" required>
+                            </label>
+                            <label>
+                                <span>Low-stock threshold</span>
+                                <input id="paintThreshold" type="number" step="0.01" min="0" value="5" required>
+                            </label>
+                        </div>
+                        <button class="primary-btn" type="submit">Create paint</button>
+                    </form>
+                </section>
+                <section class="glass-card tone-panel">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Material intelligence</p>
+                            <h3>What to watch</h3>
+                        </div>
+                    </div>
+                    <div class="feed-list">
+                        <div class="feed-item">
+                            <strong>Track expensive colors closely</strong>
+                            <p>Neon, metallic, and specialty inks tend to distort production cost fastest.</p>
+                        </div>
+                        <div class="feed-item">
+                            <strong>Set realistic thresholds</strong>
+                            <p>Use thresholds that reflect typical weekly usage so low-stock warnings become actionable.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div id="paintGrid" class="cards-grid"></div>
+        </section>
+
+        <section id="jobs" class="panel-section">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Print jobs</p>
+                    <h2>Production activity</h2>
+                </div>
+            </div>
+            <div class="split-layout">
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Create print job</p>
+                            <h3>Production entry</h3>
+                        </div>
+                    </div>
+                    <form id="printJobForm" class="stacked-form">
+                        <div class="form-grid two-up">
+                            <label>
+                                <span>Product</span>
+                                <select id="printJobProductId" required></select>
+                            </label>
+                            <label>
+                                <span>Variant</span>
+                                <select id="printJobVariantId"></select>
+                            </label>
+                        </div>
+                        <div class="form-grid three-up">
+                            <label>
+                                <span>Quantity printed</span>
+                                <input id="printJobQuantity" type="number" min="1" value="1" required>
+                            </label>
+                            <label>
+                                <span>Status</span>
+                                <select id="printJobStatus" required>
+                                    <option value="PLANNED">Planned</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="COMPLETED" selected>Completed</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Paint</span>
+                                <select id="printJobPaintId" required></select>
+                            </label>
+                        </div>
+                        <div class="form-grid two-up">
+                            <label>
+                                <span>Paint quantity used</span>
+                                <input id="printJobPaintQuantity" type="number" step="0.01" min="0.01" value="0.5" required>
+                            </label>
+                            <label>
+                                <span>Notes</span>
+                                <input id="printJobNotes" type="text" placeholder="School event run">
+                            </label>
+                        </div>
+                        <button class="primary-btn" type="submit">Create print job</button>
+                    </form>
+                </section>
+                <section class="glass-card tone-panel tone-deep">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Profit view</p>
+                            <h3>Production reminders</h3>
+                        </div>
+                    </div>
+                    <div class="feed-list">
+                        <div class="feed-item">
+                            <strong>Attach the closest variant</strong>
+                            <p>That gives the job a more accurate garment cost and retail estimate.</p>
+                        </div>
+                        <div class="feed-item">
+                            <strong>Complete jobs after paint entry</strong>
+                            <p>Paint consumption is deducted immediately, so it works best once the production figures are stable.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div id="jobsGrid" class="cards-grid"></div>
+        </section>
+
+        <section id="reports" class="panel-section">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Reports</p>
+                    <h2>Statements and exports</h2>
+                </div>
+            </div>
+
+            <div class="glass-card report-toolbar">
+                <label>
+                    <span>From</span>
+                    <input id="reportFrom" type="date">
+                </label>
+                <label>
+                    <span>To</span>
+                    <input id="reportTo" type="date">
+                </label>
+                <button class="primary-btn" id="loadReportsBtn">Load reports</button>
+                <button class="ghost-btn" id="downloadStockCsvBtn">Stock CSV</button>
+                <button class="ghost-btn" id="downloadPaintCsvBtn">Paint CSV</button>
+                <button class="ghost-btn" id="downloadJobsCsvBtn">Jobs CSV</button>
+            </div>
+
+            <div class="split-layout">
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Stock statement</p>
+                            <h3 id="stockReportTitle">Awaiting request</h3>
+                        </div>
+                    </div>
+                    <div id="stockReportSummary" class="summary-strip"></div>
+                    <div id="stockReportItems" class="feed-list"></div>
+                </section>
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Print performance</p>
+                            <h3 id="jobsReportTitle">Awaiting request</h3>
+                        </div>
+                    </div>
+                    <div id="jobsReportSummary" class="summary-strip"></div>
+                    <div id="jobsReportItems" class="feed-list"></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="settings" class="panel-section">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Settings</p>
+                    <h2>System controls</h2>
+                </div>
+            </div>
+            <div class="split-layout">
+                <section class="glass-card">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Access</p>
+                            <h3>Connection preferences</h3>
+                        </div>
+                    </div>
+                    <div class="feed-list">
+                        <div class="feed-item">
+                            <strong>Current backend</strong>
+                            <p id="settingsApiUrl">http://localhost:8080</p>
+                        </div>
+                        <div class="feed-item">
+                            <strong>Session state</strong>
+                            <p id="settingsSessionState">Signed out</p>
+                        </div>
+                    </div>
+                </section>
+                <section class="glass-card danger-panel">
+                    <div class="section-head compact">
+                        <div>
+                            <p class="eyebrow">Danger zone</p>
+                            <h3>Reset inventory</h3>
+                        </div>
+                    </div>
+                    <p class="helper-text">This permanently clears products, stock movements, paints, and print jobs. Admin password is required.</p>
+                    <form id="resetForm" class="stacked-form">
+                        <label>
+                            <span>Admin password</span>
+                            <input id="resetPassword" type="password" placeholder="Re-enter admin password" required>
+                        </label>
+                        <button id="resetButton" class="danger-btn" type="submit">Reset entire stock</button>
+                    </form>
+                </section>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="toastHost" class="toast-host"></div>
+
+<script src="./app.js?v=20260328b"></script>
+</body>
+</html>
